@@ -16,4 +16,9 @@ app.get('/', function(req, res){
     res.sendFile(path.join(__dirname + '/views/index.html'));
 });
 
+app.post('/uploadVideo', function(req, res){
+    console.log(req.file);
+    res.send('ok');
+});
+
 console.log('Server running at http://127.0.0.1:' + '3000' + '/');

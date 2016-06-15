@@ -1,9 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    
+    <title>Video Converter</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/index.css">
 </head>
 <body>
-    Hello :)!
+    <div class="container-fluid">
+        <div class="col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4" id="logo-container">
+            
+        </div>
+        <div class="col-sm-12 col-sm-offset-0 col-md-8 col-md-offset-2" id="form-container">
+            <div class="row row-content">
+                <form enctype="multipart/form-data" id="formFileUpload">
+                    <div class="form-group">
+                        <label for="fileInput">
+                            <input id="fileInput" type="file" value="Pick a file"/>                                                    
+                        </label>
+                    </div>
+                    <input type="submit" value="Convert">
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="/js/index.js"></script>
 </body>
 </html>
