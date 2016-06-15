@@ -29,47 +29,69 @@ var ajaxModule = (function(){
     }
 })();
 
-
 var videoModule = (function(){
     var video;
     
     function setVideo(event){
-        video = event.target.files[0];
+        this.video = event.target.files[0];
+    }
+    
+    function getVideo(){
+        return this.video;
     }
     
     return{
         setVideo: setVideo,
-        video: video
+        getVideo: getVideo
     }
 })();
 
 
+var video;
+function setVideo(event){
+    video = event.target.files[0];
+}
 
 var formModule = (function(){
-    function uploadVideo(event){
-        if(videoModule.video == null)
+    function uploadVideo(file, signedRequest, url){
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', signedRequest);
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState === 4){
+                if(xhr.status === 200){
+                    document.getElementById('preview').src = url;
+                    document.getElementById('avatar-url').value = url;
+                    }
+                else{
+                    alert('Could not upload file.');
+                }
+            }
+        };
+        
+        xhr.send(file);
+    }
+    
+    function getSignedRequest(event){
+        if(video == null)
             return alert('No file selected.');
         
         event.stopPropagation();
         event.preventDefault();
         
         var data = new FormData();
-        data.append('a', videoModule.video);
+        data.append(0, video);
         
-        ajaxModule.postAjaxCall(data, 'uploadVideo', function(data){
-            alert('fim');
-        });
-    }
-    
-    function getSignedRequest(){
-        
+        ajaxModule.getAjaxCall(data, 'uploadVideo?file-name='+ video.name +'&file-type='+ video.type, function(data){ 
+            uploadVideo(video, JSON.parse(data).signedRequest, JSON.parse(data).url);
+        });        
     }
     
     return{
+        getSignedRequest: getSignedRequest,
         uploadVideo: uploadVideo
     }
 })();
 
-$('input[type=file]').on('change', videoModule.setVideo);
+$('input[type=file]').on('change', setVideo);
 
-$('form').on('submit', formModule.uploadVideo);
+$('form').on('submit', formModule.getSignedRequest);
