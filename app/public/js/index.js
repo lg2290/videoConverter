@@ -86,9 +86,38 @@ var formModule = (function(){
         });        
     }
     
+    function convertVideo(){
+        
+        var request = {
+            'input': 'https://s3-sa-east-1.amazonaws.com/lg2290-video-converter/sample.dv',
+            'outputs': [
+                {
+                    'url': 's3://lg2290-video-converter/test.mp4',
+                    'credentials': 's3'
+                }
+            ] 
+        }
+        // Let's use $.ajax instead of $.post so we can specify custom headers.
+        $.ajax({
+            url: 'https://app.zencoder.com/api/v2/jobs',
+            type: 'POST',
+            data: JSON.stringify(request),
+            headers: { "Zencoder-Api-Key": '691e4718a003c19666f3ea08788b121f' },
+            dataType: 'json',
+            success: function(data) {
+            $('body').append('Job created! <a href="https://app.zencoder.com/jobs/'+ data.id +'">View Job</a>')
+            },
+            error: function(data) {
+            console.log(data);
+            }
+        });  
+
+    }
+    
     return{
         getSignedRequest: getSignedRequest,
-        uploadVideo: uploadVideo
+        uploadVideo: uploadVideo,
+        convertVideo: convertVideo
     }
 })();
 
