@@ -30,9 +30,32 @@ var zencoderInterface = (function(){
             }
         );
     }
+
+    function getParams(fileName, fileType) {
+        return {
+            method: 'POST',
+            uri: ZENCODER_URI,
+            body: JSON.stringify({
+                'api_key': ZENCODER_API_KEY,
+                'input': S3_TO_CONVERT_URL + fileName + fileType,
+                'outputs': [
+                    {
+                        'url': S3_CONVERTED_URL + fileName + '.mp4',
+                        'credentials': 's3'
+                    }
+                ] 
+            })
+        };
+    }
+
+    function getParamsCheckStatus(jobId) {
+        return { uri: ZENCODER_URI+ '/' + jobId +'/progress.json?api_key='+ ZENCODER_API_KEY };
+    }
     
     return{
-        convertVideo: convertVideo
+        convertVideo: convertVideo,
+        getParams: getParams,
+        getParamsCheckStatus: getParamsCheckStatus
     }
     
 })();

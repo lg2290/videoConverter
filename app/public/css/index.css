@@ -1,0 +1,52 @@
+.overlayPanel{
+    background-color: rgba(0,0,0,0.6);
+    display: none;
+    height: 100vh;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    z-index: 100;
+}
+
+.videoContainer{
+    display: none;
+    margin-top: 20vh;
+}
+
+
+.loadingContainer{
+    background-color: rgba(0,0,0,0);
+    display: none;
+    height: 100vh;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    z-index: 2000;
+}
+
+.loadingContainer .gifContainer{
+    height: 20vh;
+    margin-left: 40vw;
+    margin-top: 30vh;
+    position: absolute;
+    text-align: center;
+    width: 20vw;
+}
+.imgHelper{
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.loadingContainer .textContainer{
+    color: white;
+    height: 10vh;
+    margin-top: 50vh;
+    position: absolute;
+    text-align: center;
+    width: 100vw;    
+}

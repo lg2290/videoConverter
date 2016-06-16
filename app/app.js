@@ -20,7 +20,7 @@ app.get('/', function(req, res){
 app.get('/uploadVideo', (req, res) => {
     
     const s3 = s3Helper.getS3();
-    const fileName = 'test';//uuid.v4();
+    const fileName = uuid.v4();
     const fileType = req.query['file-type'];
     const s3Params = s3Helper.getParams(fileName, fileType);
     
@@ -41,37 +41,55 @@ app.get('/uploadVideo', (req, res) => {
 });
 
 app.get('/convertVideo', (req, res) => {
-    zencoderHelper.convertVideo();
-    res.write('teste');
-    res.end;
-});
-
-function convertVideo2(){
+    const fileName = req.query['file-name'];
+    const fileType = req.query['file-type'];
+    const reqParams = zencoderHelper.getParams(fileName, fileType);
+    
     request(
-        {
-            method: 'POST',
-            uri: 'https://app.zencoder.com/api/v2/jobs',
-            body: JSON.stringify({
-                'api_key': ZENCODER_API_KEY,
-                'input': 'https://s3-sa-east-1.amazonaws.com/lg2290-video-converter/sample.dv',
-                'outputs': [
-                    {
-                        'url': 's3://lg2290-video-converter/test2.mp4',
-                        'credentials': 's3'
-                    }
-                ] 
-            })
-        }, function(error, response, body){
+        reqParams, function(error, response, body){
             if(error) {
                 console.log(error);
+                res.write(JSON.stringify({
+                    success: false
+                }));
             } else {
                 console.log(response.statusCode, body);
+                var bodyJson = JSON.parse(body);
+                res.write(JSON.stringify({
+                    success: true,
+                    jobId: bodyJson.id
+                }));
             }
-        }
+            res.end();
+        }    
     );
-}
+});
+
+app.get('/conversionStatus', (req, res) => {
+    const jobId = req.query['job-id'];
+    const reqParams = zencoderHelper.getParamsCheckStatus(jobId);
+
+
+    request(
+        reqParams, function(error, response, body){
+            if(error) {
+                console.log(error);
+                res.write(JSON.stringify({
+                    success: false
+                }));
+            } else {
+                console.log(response.statusCode, body);
+                var bodyJson = JSON.parse(body);
+                console.log(bodyJson.id);
+                res.write(JSON.stringify({
+                    success: true,
+                    jobStatus: bodyJson.state
+                }));
+            }
+            res.end();
+        }
+        
+    );
+});
 
 console.log('Server running at http://127.0.0.1:' + '3000' + '/');
-
-//convertVideo2();
-

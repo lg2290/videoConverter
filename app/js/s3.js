@@ -1,8 +1,8 @@
 var s3Interface = (function () {
     const aws = require('aws-sdk');
     aws.config.update({
-        accessKeyId: "AKIAJ73VMUL3OP2LIQGA",
-        secretAccessKey: "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"
+        accessKeyId: "AKIAI5LEYIWN5HKQENGA",
+        secretAccessKey: "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"
     });
     
     const S3_BUCKET = 'lg2290-video-converter';
@@ -20,7 +20,7 @@ var s3Interface = (function () {
     }
 
     function getParams(fileName, fileType) {
-        s3Params.Key = fileName;
+        s3Params.Key = 'to-convert/'+fileName;
         s3Params.ContentType = fileType;
         
         return s3Params;
