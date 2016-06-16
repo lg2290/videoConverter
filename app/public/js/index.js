@@ -1,6 +1,7 @@
+var video;
+
 var ajaxModule = (function(){
     function ajaxCall(type, data, endPoint, successCb){
-        alert('aqui');
         $.ajax({
             cache:false,
             contentType: false,
@@ -30,38 +31,45 @@ var ajaxModule = (function(){
 })();
 
 var videoModule = (function(){
-    var video;
     
+    function convertVideo(){
+        
+    }
+
+    function getSignedRequest(){
+        var data = new FormData();
+        data.append(0, video);
+        
+        alert('aqui');
+        
+        ajaxModule.getAjaxCall(data, 'uploadVideo?file-type='+ video.type, function(response){
+            var respJson = JSON.parse(response);
+            console.log(respJson);
+            uploadVideoToS3(video, respJson.signedRequest, respJson.url);
+        });        
+    }
+
     function setVideo(event){
-        this.video = event.target.files[0];
+        video = event.target.files[0];
     }
-    
-    function getVideo(){
-        return this.video;
+        
+    function uploadVideo(){
+        if(video == null)
+            return alert('No file selected.');
+        
+        getSignedRequest();
     }
-    
-    return{
-        setVideo: setVideo,
-        getVideo: getVideo
-    }
-})();
 
-
-var video;
-function setVideo(event){
-    video = event.target.files[0];
-}
-
-var formModule = (function(){
-    function uploadVideo(file, signedRequest, url){
+    function uploadVideoToS3(file, signedRequest, url){
         const xhr = new XMLHttpRequest();
         xhr.open('PUT', signedRequest);
         xhr.onreadystatechange = () => {
             if(xhr.readyState === 4){
                 if(xhr.status === 200){
-                    document.getElementById('preview').src = url;
-                    document.getElementById('avatar-url').value = url;
-                    }
+                    // document.getElementById('preview').src = url;
+                    // document.getElementById('avatar-url').value = url;
+                    convertVideo();
+                }
                 else{
                     alert('Could not upload file.');
                 }
@@ -70,20 +78,22 @@ var formModule = (function(){
         
         xhr.send(file);
     }
+        
+    return{
+        convertVideo: convertVideo,
+        setVideo: setVideo,
+        uploadVideo: uploadVideo
+    }
+})();
+
+var formModule = (function(){
     
     function getSignedRequest(event){
-        if(video == null)
-            return alert('No file selected.');
         
         event.stopPropagation();
         event.preventDefault();
         
-        var data = new FormData();
-        data.append(0, video);
         
-        ajaxModule.getAjaxCall(data, 'uploadVideo?file-name='+ video.name +'&file-type='+ video.type, function(data){ 
-            uploadVideo(video, JSON.parse(data).signedRequest, JSON.parse(data).url);
-        });        
     }
     
     function convertVideo(){
@@ -116,11 +126,26 @@ var formModule = (function(){
     
     return{
         getSignedRequest: getSignedRequest,
-        uploadVideo: uploadVideo,
         convertVideo: convertVideo
     }
 })();
 
-$('input[type=file]').on('change', setVideo);
+var initModule = (function(){
+    const btnConvert = '#convertBtn';
+    const fileInput = '#fileInput';
+    
+    function initElements(){
+        $(fileInput).on('change', videoModule.setVideo);
+        $(btnConvert).on('click', videoModule.uploadVideo);
+    }
+    
+    return{
+        initElements: initElements
+    }
 
-$('form').on('submit', formModule.getSignedRequest);
+})();
+
+initModule.initElements();
+
+
+
