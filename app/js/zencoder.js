@@ -3,7 +3,7 @@ var zencoderInterface = (function(){
 
     const S3_CONVERTED_URL = 's3://lg2290-video-converter/converted/';
     const S3_TO_CONVERT_URL = 'https://s3-sa-east-1.amazonaws.com/lg2290-video-converter/to-convert/';
-    const ZENCODER_API_KEY  = '691e4718a003c19666f3ea08788b121f';
+    const ZENCODER_API_KEY  = '****';
     const ZENCODER_URI = 'https://app.zencoder.com/api/v2/jobs';
     
     function convertVideo(fileName, fileType){
