@@ -16,14 +16,30 @@
         </div>
         <div class="col-sm-12 col-sm-offset-0 col-md-8 col-md-offset-2" id="form-container">
             <div class="row row-content">
-                <form enctype="multipart/form-data" id="formFileUpload">
-                    <div class="form-group">
-                        <label for="fileInput">
-                            <input id="fileInput" type="file" value="Pick a file"/>                                                    
-                        </label>
-                    </div>
-                    <input type="submit" value="Convert">
-                </form>
+                <div class="form-group">
+                    <label for="fileInput">
+                        <input id="fileInput" type="file" value="Pick a file"/>                                                    
+                    </label>
+                </div>
+                <button class="btn btn-info" id="convertBtn">Convert Video</button>
+            </div>
+        </div>
+    </div>
+    <div class="overlayPanel">
+        <div class="col-sm-12 col-sm-offset-0 col-md-8 col-md-offset-2 videoContainer">
+            <div class="embed-responsive embed-responsive-16by9">
+                <video class="embed-responsive-item" controls id="videoPlayer">
+                    <source id="videoSource" type="video/mp4">
+                </video>
+            </div>
+            <button class="btn btn-info" id="closeVideoBtn">Close</button>
+        </div>
+        <div class="loadingContainer">
+            <div class="gifContainer">
+                <span class="imgHelper"></span><img src="images/loader.gif"/>
+            </div>
+            <div class="textContainer text-center">
+                <h2>converting</h2>
             </div>
         </div>
     </div>

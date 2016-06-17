@@ -1,6 +1,9 @@
+var zencoderJobId
+var video;
+var videoName;
+
 var ajaxModule = (function(){
     function ajaxCall(type, data, endPoint, successCb){
-        alert('aqui');
         $.ajax({
             cache:false,
             contentType: false,
@@ -29,39 +32,132 @@ var ajaxModule = (function(){
     }
 })();
 
-var videoModule = (function(){
-    var video;
-    
-    function setVideo(event){
-        this.video = event.target.files[0];
+var overlayPanelModule = (function(){
+    const loadingContainer = $('.loadingContainer');
+    const overlayPanel = $('.overlayPanel');
+    const videoContainer = $('.videoContainer');
+    const videoPlayer = $('#videoPlayer');
+    const videoSource = $('#videoSource');
+
+
+    function hideLoading(){
+        hidePanel(loadingContainer);
     }
-    
-    function getVideo(){
-        return this.video;
+
+    function hidePanel(element){
+        element.hide();
+        overlayPanel.hide();
     }
-    
+
+    function hideVideo(){
+        hidePanel(videoContainer);
+    }
+
+    function showLoading(){
+        showPanel(loadingContainer);
+    }
+
+    function showPanel(element){
+        element.show();
+        overlayPanel.show();
+    }
+
+    function showVideo(videoSrc){
+        videoSource.attr("src", videoSrc);
+        videoPlayer.load();
+        showPanel(videoContainer);
+    }
+
     return{
-        setVideo: setVideo,
-        getVideo: getVideo
+        hideLoading: hideLoading,
+        hideVideo: hideVideo,
+        showLoading: showLoading,
+        showVideo:showVideo
     }
+
 })();
 
+var videoModule = (function(){
+    
+    const videoSource = '#videoSource';
 
-var video;
-function setVideo(event){
-    video = event.target.files[0];
-}
+    function checkJobStatus(jobId){
+        ajaxModule.getAjaxCall('', 'conversionStatus?job-id=' + jobId, function(response){
+            var respJson = JSON.parse(response);
+            if(respJson.success){
+                var status = respJson.jobStatus;
+                console.log(status);
+                if(status == 'finished'){
+                    overlayPanelModule.hideLoading();
+                    overlayPanelModule.showVideo('http://s3-sa-east-1.amazonaws.com/lg2290-video-converter/converted/'+videoName+'.mp4');
+                }
+                else if(status != 'failed' && status != 'cancelled'){
+                    setTimeout(checkJobStatus(zencoderJobId), 4000);
+                }
+                else
+                    converionFailed();
+            }
+            else{
+                converionFailed();
+            }
+        });
+    }
 
-var formModule = (function(){
-    function uploadVideo(file, signedRequest, url){
+    function converionFailed(){
+        overlayPanelModule.hideLoading();
+        alert('Conversion failed! Please try again.');
+    }
+
+    function convertVideo(fileName){
+        console.log(fileName);
+        ajaxModule.getAjaxCall('', 'convertVideo?file-name=' + fileName + '&file-type=' + video.type, function(response){
+            var respJson = JSON.parse(response);
+            if(respJson.success){
+                zencoderJobId = respJson.jobId;
+                checkJobStatus(respJson.jobId);
+            }
+            else{
+                converionFailed();
+            }
+        });
+    }
+
+    function getSignedRequest(){
+        var data = new FormData();
+        data.append(0, video);
+        
+        ajaxModule.getAjaxCall(data, 'uploadVideo?file-type='+ video.type, function(response){
+            var respJson = JSON.parse(response);
+            console.log(respJson);
+            videoName = respJson.nameFile;
+            uploadVideoToS3(video, respJson.signedRequest, respJson.url, respJson.nameFile);
+        });        
+    }
+
+    function showConvertedVideo(){
+
+    }
+
+    function setVideo(event){
+        video = event.target.files[0];
+    }
+        
+    function uploadVideo(){
+        if(video == null)
+            return alert('No file selected.');
+        
+        overlayPanelModule.showLoading();
+        getSignedRequest();
+    }
+
+    function uploadVideoToS3(file, signedRequest, url, fileName){
         const xhr = new XMLHttpRequest();
         xhr.open('PUT', signedRequest);
         xhr.onreadystatechange = () => {
             if(xhr.readyState === 4){
                 if(xhr.status === 200){
-                    document.getElementById('preview').src = url;
-                    document.getElementById('avatar-url').value = url;
-                    }
+                    convertVideo(fileName);
+                }
                 else{
                     alert('Could not upload file.');
                 }
@@ -70,57 +166,31 @@ var formModule = (function(){
         
         xhr.send(file);
     }
-    
-    function getSignedRequest(event){
-        if(video == null)
-            return alert('No file selected.');
         
-        event.stopPropagation();
-        event.preventDefault();
-        
-        var data = new FormData();
-        data.append(0, video);
-        
-        ajaxModule.getAjaxCall(data, 'uploadVideo?file-name='+ video.name +'&file-type='+ video.type, function(data){ 
-            uploadVideo(video, JSON.parse(data).signedRequest, JSON.parse(data).url);
-        });        
-    }
-    
-    function convertVideo(){
-        
-        var request = {
-            'input': 'https://s3-sa-east-1.amazonaws.com/lg2290-video-converter/sample.dv',
-            'outputs': [
-                {
-                    'url': 's3://lg2290-video-converter/test.mp4',
-                    'credentials': 's3'
-                }
-            ] 
-        }
-        // Let's use $.ajax instead of $.post so we can specify custom headers.
-        $.ajax({
-            url: 'https://app.zencoder.com/api/v2/jobs',
-            type: 'POST',
-            data: JSON.stringify(request),
-            headers: { "Zencoder-Api-Key": '691e4718a003c19666f3ea08788b121f' },
-            dataType: 'json',
-            success: function(data) {
-            $('body').append('Job created! <a href="https://app.zencoder.com/jobs/'+ data.id +'">View Job</a>')
-            },
-            error: function(data) {
-            console.log(data);
-            }
-        });  
-
-    }
-    
     return{
-        getSignedRequest: getSignedRequest,
-        uploadVideo: uploadVideo,
-        convertVideo: convertVideo
+        convertVideo: convertVideo,
+        setVideo: setVideo,
+        uploadVideo: uploadVideo
     }
 })();
 
-$('input[type=file]').on('change', setVideo);
+var initModule = (function(){
+    const btnCloseVideo = '#closeVideoBtn';
+    const btnConvert = '#convertBtn';
+    const fileInput = '#fileInput';
+    
+    function initElements(){
+        $(fileInput).on('change', videoModule.setVideo);
+        $(btnConvert).on('click', videoModule.uploadVideo);
+    }
+    
+    return{
+        initElements: initElements
+    }
 
-$('form').on('submit', formModule.getSignedRequest);
+})();
+
+initModule.initElements();
+
+
+
