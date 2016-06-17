@@ -1,8 +1,8 @@
 var s3Interface = (function () {
     const aws = require('aws-sdk');
     aws.config.update({
-        accessKeyId: "AKIAI5LEYIWN5HKQENGA",
-        secretAccessKey: "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"
+        accessKeyId: "***",
+        secretAccessKey: "****"
     });
     
     const S3_BUCKET = 'lg2290-video-converter';
